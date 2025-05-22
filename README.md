@@ -5,6 +5,15 @@ if an issue is discovered.
 
 While the repository is public, the primary focus is my own use and thus responses may be slow.
 
+## Getting Started
+Start by adding the package as a dependency to your project:
+
+```shell
+go get -u go.dsage.org/standard
+```
+
+For an overview of each package within the library, see the `README.md` in each subdirectory.
+
 ## Requirements
 There are no direct dependencies for this project, but testing only takes place on the following hosts:
 
