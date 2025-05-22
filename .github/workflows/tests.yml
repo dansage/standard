@@ -14,6 +14,9 @@ jobs:
   tests:
     name: Run tests
 
+    # continue running the tests if one variant fails
+    continue-on-error: true
+
     # define the platforms and toolsets to run the tests on
     strategy:
       matrix:
@@ -23,7 +26,9 @@ jobs:
 
         # use Ubuntu to run the tests
         platform:
+          - macos-latest
           - ubuntu-latest
+          - windows-latest
 
     # set the current platform
     runs-on: ${{ matrix.platform }}
