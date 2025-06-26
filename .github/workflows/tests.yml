@@ -45,18 +45,6 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
 
-      - name: cache the dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~\AppData\Local\go-build
-            ~/Library/Caches/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
       - name: run tests
         run: go test -v ./...
         env:
