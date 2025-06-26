@@ -1,0 +1,22 @@
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2025 Daniel Sage
+// SPDX-FileType: SOURCE
+
+//go:build !linux
+
+package systemd
+
+// Notify reports the specified state to systemd using the configured notify socket (see `sd_notify(3)`).
+//
+// On all platforms except Linux, this method is a no-op.
+func Notify(state string) error {
+	return nil
+}
+
+// Notifyf reports the specified state (after formatting) to systemd using the configured notify socket (see
+// `sd_notify(3)`).
+//
+// On all platforms except Linux, this method is a no-op.
+func Notifyf(format string, args ...any) error {
+	return nil
+}
