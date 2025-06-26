@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2025 Daniel Sage
+// SPDX-FileType: SOURCE
+
 package build
 
 import (
