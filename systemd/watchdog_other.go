@@ -6,6 +6,8 @@
 
 package systemd
 
+import "time"
+
 // Watchdog is a background method that continuously polls the service to determine if it reports it is still healthy
 // and sends a notification to systemd halfway through the configured interval period. If the service reports it is
 // unhealthy, an error is returned. If the watchdog is not configured for the service, the method returns without an
