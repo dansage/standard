@@ -2,13 +2,13 @@
 // SPDX-FileCopyrightText: 2025 Daniel Sage
 // SPDX-FileType: SOURCE
 
-//go:build !linux
+//go:build !unix
 
 package systemd
 
 // Notify reports the specified state to systemd using the configured notify socket (see `sd_notify(3)`).
 //
-// On all platforms except Linux, this method is a no-op.
+// This is only implemented on unix platforms, on all other platforms this method is essentially a no-op.
 func Notify(state string) error {
 	return nil
 }
@@ -16,7 +16,7 @@ func Notify(state string) error {
 // Notifyf reports the specified state (after formatting) to systemd using the configured notify socket (see
 // `sd_notify(3)`).
 //
-// On all platforms except Linux, this method is a no-op.
+// This is only implemented on unix platforms, on all other platforms this method is essentially a no-op.
 func Notifyf(format string, args ...any) error {
 	return nil
 }

@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2025 Daniel Sage
 // SPDX-FileType: SOURCE
 
-//go:build !linux
+//go:build !unix
 
 package systemd
 
@@ -13,7 +13,7 @@ import "time"
 // unhealthy, an error is returned. If the watchdog is not configured for the service, the method returns without an
 // error. This method blocks the current thread and should be run in a goroutine for best effect.
 //
-// On all platforms except Linux, this method is a no-op.
+// This is only implemented on unix platforms, on all other platforms this method is essentially a no-op.
 func Watchdog(healthy func() bool) error {
 	return nil
 }
@@ -22,7 +22,7 @@ func Watchdog(healthy func() bool) error {
 // service should notify systemd it is still alive and running. If the returned interval is `-1`, the watchdog is not
 // enabled for this service.
 //
-// On all platforms except Linux, this method is a no-op.
+// This is only implemented on unix platforms, on all other platforms this method is essentially a no-op.
 func WatchdogInterval() (time.Duration, error) {
 	return -1, nil
 }

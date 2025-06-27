@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2025 Daniel Sage
 // SPDX-FileType: SOURCE
 
-//go:build linux
+//go:build unix
 
 package systemd_test
 
