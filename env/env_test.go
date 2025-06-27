@@ -12,8 +12,6 @@ import (
 	"go.dsage.org/standard/env"
 )
 
-// TestDefaultEnvironmentIsProduction ensures the environment type is detected as production when either no value is set
-// or the ENV variable is set to an unknown value
 func TestDefaultEnvironmentIsProduction(t *testing.T) {
 	// get the initial value of the ENV variable
 	initial, initialOk := os.LookupEnv("ENV")
@@ -76,7 +74,6 @@ func TestDefaultEnvironmentIsProduction(t *testing.T) {
 	}
 }
 
-// TestEnvironmentIsDevelopment ensures the environment type is detected as development for all valid values
 func TestEnvironmentIsDevelopment(t *testing.T) {
 	// get the initial value of the ENV variable
 	initial, initialOk := os.LookupEnv("ENV")
@@ -128,7 +125,6 @@ func TestEnvironmentIsDevelopment(t *testing.T) {
 	}
 }
 
-// TestEnvironmentIsSet ensures the current environment type is automatically set during initialization
 func TestEnvironmentIsSet(t *testing.T) {
 	// verify the current environment is automatically set
 	if env.Current != env.DetectEnvironment() {
@@ -136,7 +132,6 @@ func TestEnvironmentIsSet(t *testing.T) {
 	}
 }
 
-// TestEnvironmentIsTest ensures the environment type is detected as testing initially and for all valid values
 func TestEnvironmentIsTest(t *testing.T) {
 	// get the initial value of the ENV variable
 	initial, initialOk := os.LookupEnv("ENV")

@@ -9,7 +9,6 @@ import (
 	"testing"
 )
 
-// TestGoVersionIsDetected ensures the Go runtime version is automatically detected and is correct
 func TestGoVersionIsDetected(t *testing.T) {
 	// get the actual Go version from the runtime
 	ver := runtime.Version()
@@ -20,7 +19,6 @@ func TestGoVersionIsDetected(t *testing.T) {
 	}
 }
 
-// TestStaticVersionIsDetected ensures the static version overrides the detection logic, if present
 func TestStaticVersionIsDetected(t *testing.T) {
 	// save the static version to restore it later
 	static := staticVersion
