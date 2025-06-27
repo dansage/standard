@@ -6,17 +6,12 @@
 
 package systemd
 
-// Notify reports the specified state to systemd using the configured notify socket (see `sd_notify(3)`).
-//
-// This is only implemented on unix platforms, on all other platforms this method is essentially a no-op.
+// Notify reports the specified state to systemd using the configured notify socket.
 func Notify(state string) error {
 	return nil
 }
 
-// Notifyf reports the specified state (after formatting) to systemd using the configured notify socket (see
-// `sd_notify(3)`).
-//
-// This is only implemented on unix platforms, on all other platforms this method is essentially a no-op.
+// Notifyf reports the specified state (after formatting) to systemd using the configured notify socket.
 func Notifyf(format string, args ...any) error {
 	return nil
 }

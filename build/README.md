@@ -1,7 +1,11 @@
 # `build`
+[![Go Reference](https://pkg.go.dev/badge/go.dsage.org/standard/build.svg)][1]
+
 This package contains logic to identify the exact revision of the app that is running by reading the VCS information
 stored within the binary at compile time. The VCS information can be ignored in favor of a statically set version if one
-is embedded manually.
+is embedded manually. Whether using VCS information or a static version, the version will be stored in `DetectedVersion`
+during initialization. The detected Go version will also be stored in `GoVersion` if you prefer to access it using this
+package as well.
 
 ## VCS Build Info
 Upon initialization, the package will automatically read the embedded build info to identify the VCS revision and state
@@ -70,3 +74,5 @@ func main() {
 	// The app version is 1.2.34
 }
 ```
+
+[1]: https://pkg.go.dev/go.dsage.org/standard/build

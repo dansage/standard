@@ -1,7 +1,12 @@
 # `env`
+[![Go Reference](https://pkg.go.dev/badge/go.dsage.org/standard/env.svg)][1]
+
 This package contains a very simple environment detection system. In most situations, this package can be used simply by
 reading the contents of the `Current` variable to determine the current environment type. If the environment type is not
 explicitly set or the value of the `ENV` environment variable is unknown, `Production` is assumed.
+
+In the event the environment type needs to be redetected, the `DetectEnvironment` method can be used. This does not
+update the `Current` variable automatically.
 
 ## Automatic Detection
 Upon initialization the package will automatically use the contents of the `ENV` environment variable to identify the
@@ -65,3 +70,5 @@ func main() {
 	// The current environment is development
 }
 ```
+
+[1]: https://pkg.go.dev/go.dsage.org/standard/env

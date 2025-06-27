@@ -17,8 +17,6 @@ import (
 // and sends a notification to systemd halfway through the configured interval period. If the service reports it is
 // unhealthy, an error is returned. If the watchdog is not configured for the service, the method returns without an
 // error. This method blocks the current thread and should be run in a goroutine for best effect.
-//
-// This is only implemented on unix platforms, on all other platforms this method is essentially a no-op.
 func Watchdog(healthy func() bool) error {
 	// pull the configured watchdog interval
 	interval, err := WatchdogInterval()
@@ -50,8 +48,6 @@ func Watchdog(healthy func() bool) error {
 // WatchdogInterval pulls the configured watchdog interval from the environment. The interval specifies how often the
 // service should notify systemd it is still alive and running. If the returned interval is `-1`, the watchdog is not
 // enabled for this service.
-//
-// This is only implemented on unix platforms, on all other platforms this method is essentially a no-op.
 func WatchdogInterval() (time.Duration, error) {
 	// pull the configured watchdog interval (in microseconds) from the environment
 	usec, ok := os.LookupEnv("WATCHDOG_USEC")
