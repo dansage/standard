@@ -8,13 +8,13 @@ import (
 	"runtime/debug"
 )
 
-// DetectedVersion indicates the VCS commit info when the project was compiled
+// DetectedVersion indicates the VCS commit info when the project was compiled.
 var DetectedVersion string
 
-// GoVersion indicates the version of Go used when the project was compiled
+// GoVersion indicates the version of Go used when the project was compiled.
 var GoVersion string
 
-// staticVersion is the project version injected into the binary during the build process
+// staticVersion is the project version injected into the binary during the build process.
 var staticVersion string
 
 // detectVersion uses the embedded build information to determine the version of the project. This automatically run

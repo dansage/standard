@@ -9,24 +9,24 @@ import (
 	"strings"
 )
 
-// Current indicates the environment the application is running in
+// Current indicates the environment the application is running in.
 var Current Type
 
-// Type represents the different type of application environments
+// Type represents the different type of application environments.
 type Type string
 
 const (
-	// Production indicates the application is running in a production environment
+	// Production indicates the application is running in a production environment.
 	Production Type = "production"
 
-	// Testing indicates the application is running in a CI testing environment
+	// Testing indicates the application is running in a CI testing environment.
 	Testing Type = "testing"
 
-	// Development indicates the application is running in a local development environment
+	// Development indicates the application is running in a local development environment.
 	Development Type = "development"
 )
 
-// DetectEnvironment uses the environment variable ENV to determine what type of environment this is
+// DetectEnvironment uses the environment variable ENV to determine what type of environment this is.
 func DetectEnvironment() Type {
 	// pull the environment string from the environment (how appropriate!)
 	env, _ := os.LookupEnv("ENV")
