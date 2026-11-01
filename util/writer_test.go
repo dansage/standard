@@ -6,6 +6,8 @@ package util
 
 import (
 	"bytes"
+	"errors"
+	"io"
 	"os"
 	"testing"
 )
@@ -61,8 +63,12 @@ func TestMultiWriter_Write(t *testing.T) {
 
 	// write a sample buffer to the writer
 	expected := []byte("hello world")
-	if _, err := wr.Write(expected); err != nil {
+	n, err := wr.Write(expected)
+	if err != nil {
 		t.Fatalf("failed to write to both buffers: %v", err)
+	}
+	if n != len(expected) {
+		t.Fatalf("failed to write to both buffers: expected %d bytes, got %d", len(expected), n)
 	}
 
 	// verify the first buffer contains the correct data
@@ -85,7 +91,7 @@ func TestMultiWriter_Write(t *testing.T) {
 	// write a sample buffer to the writer
 	expected = []byte("goodbye world")
 	if _, err := wr.Write(expected); err != nil {
-		t.Fatalf("failed to write to both buffers: %v", err)
+		t.Fatalf("failed to write to buffer: %v", err)
 	}
 
 	// verify the first buffer is empty
@@ -96,5 +102,31 @@ func TestMultiWriter_Write(t *testing.T) {
 	// verify the second buffer contains the correct data
 	if !bytes.Equal(buf2.Bytes(), expected) {
 		t.Fatalf("second buffer should have been %v, has: %v", expected, buf2.Bytes())
+	}
+}
+
+// shortWriter is a test writer that reports short writes without errors.
+type shortWriter struct{}
+
+// Write discards the provided data and always reports it wrote 1 byte less than the provided buffer, or zero, without
+// any errors.
+func (shortWriter) Write(p []byte) (int, error) {
+	return max(0, len(p)-1), nil
+}
+
+func TestMultiWriter_Write_ShortWrite(t *testing.T) {
+	wr := NewMultiWriter()
+
+	// register a special writer that should always fail with non-empty buffers
+	wr.Register(shortWriter{})
+
+	// write a sample buffer to the writer
+	expected := []byte("hello world")
+	n, err := wr.Write(expected)
+	if !errors.Is(err, io.ErrShortWrite) {
+		t.Fatalf("expected short write error, got: %v", err)
+	}
+	if n != len(expected)-1 {
+		t.Fatalf("expected %d bytes, got %d", len(expected)-1, n)
 	}
 }

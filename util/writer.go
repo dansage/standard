@@ -69,8 +69,12 @@ func (w *MultiWriter) Write(p []byte) (n int, err error) {
 	// loop through the registered writers
 	for _, writer := range w.writers {
 		// write the data to the stream
-		if n, err := writer.Write(p); err != nil {
+		n, err = writer.Write(p)
+		if err != nil {
 			return n, err
+		}
+		if n < len(p) {
+			return n, io.ErrShortWrite
 		}
 	}
 
