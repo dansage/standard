@@ -9,6 +9,8 @@ import (
 	"errors"
 	"io"
 	"os"
+	"sync"
+	"sync/atomic"
 	"testing"
 )
 
@@ -317,5 +319,107 @@ func TestMultiWriter_Write_Zero(t *testing.T) {
 	// verify the buffer contains the correct data
 	if !bytes.Equal(buf.Bytes(), expected) {
 		t.Fatalf("buffer should have been %v, has: %v", expected, buf.Bytes())
+	}
+}
+
+// overlapWriter is a test writer that records whether any two write operations were ever in progress at the same time.
+type overlapWriter struct {
+	active  atomic.Int32
+	overlap atomic.Bool
+	writes  atomic.Int32
+}
+
+// Write discards the provided data, flagging an overlap if another write operation is already in progress.
+func (o *overlapWriter) Write(p []byte) (int, error) {
+	if o.active.Add(1) > 1 {
+		o.overlap.Store(true)
+	}
+	defer o.active.Add(-1)
+
+	// widen the window for overlapping writes to be detected
+	for range 1000 {
+		_ = o.active.Load()
+	}
+
+	o.writes.Add(1)
+	return len(p), nil
+}
+
+func TestMultiWriter_Write_Concurrent(t *testing.T) {
+	const goroutines, iterations = 8, 100
+	var buf bytes.Buffer
+	ow := new(overlapWriter)
+	wr := NewMultiWriter(&buf, ow)
+
+	// write a fixed size record from multiple goroutines at the same time
+	record := []byte("0123456789")
+	var wg sync.WaitGroup
+	for range goroutines {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for range iterations {
+				if _, err := wr.Write(record); err != nil {
+					t.Errorf("failed to write: %v", err)
+					return
+				}
+			}
+		}()
+	}
+	wg.Wait()
+
+	// verify no two write operations ran at the same time
+	if ow.overlap.Load() {
+		t.Fatalf("write operations overlapped")
+	}
+
+	// verify every write reached both writers intact
+	if n := int(ow.writes.Load()); n != goroutines*iterations {
+		t.Fatalf("expected %d writes, got %d", goroutines*iterations, n)
+	}
+	if !bytes.Equal(buf.Bytes(), bytes.Repeat(record, goroutines*iterations)) {
+		t.Fatalf("buffer contains corrupted or missing records, has %d bytes", buf.Len())
+	}
+}
+
+func TestMultiWriter_Concurrent(t *testing.T) {
+	const goroutines, iterations = 8, 100
+	var stable bytes.Buffer
+	wr := NewMultiWriter(&stable)
+
+	// register, write, and unregister from multiple goroutines at the same time
+	record := []byte("hello world")
+	var wg sync.WaitGroup
+	for range goroutines {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for range iterations {
+				var buf bytes.Buffer
+				wr.Register(&buf)
+				if _, err := wr.Write(record); err != nil {
+					t.Errorf("failed to write: %v", err)
+					return
+				}
+				wr.Unregister(&buf)
+
+				// verify the temporary buffer received at least its own write
+				if buf.Len() < len(record) {
+					t.Errorf("temporary buffer should have at least %d bytes, has: %d", len(record), buf.Len())
+					return
+				}
+			}
+		}()
+	}
+	wg.Wait()
+
+	// verify only the original writer remains registered
+	if len(wr.writers) != 1 {
+		t.Fatalf("multi writer should have 1 writer, has: %d", len(wr.writers))
+	}
+
+	// verify the original writer received every write
+	if !bytes.Equal(stable.Bytes(), bytes.Repeat(record, goroutines*iterations)) {
+		t.Fatalf("stable buffer contains corrupted or missing records, has %d bytes", stable.Len())
 	}
 }
