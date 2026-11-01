@@ -6,6 +6,8 @@ package util
 
 import (
 	"io"
+	"reflect"
+	"slices"
 	"sync"
 )
 
@@ -15,28 +17,60 @@ type MultiWriter struct {
 	writers []io.Writer
 
 	// mutex ensures safe access to the collection of registered writers.
-	mutex sync.RWMutex
+	mutex sync.Mutex
 }
 
-// NewMultiWriter initializes a new log writer with the specified writers pre-registered.
+// NewMultiWriter initializes a new multi writer with the specified writers pre-registered. Writers should be provided
+// as pointers to ensure they can be reliably identified later on.
 func NewMultiWriter(writers ...io.Writer) *MultiWriter {
-	return &MultiWriter{
-		writers: writers,
+	w := new(MultiWriter)
+
+	// loop through the specified writers, registering each and ignoring duplicates
+	for _, writer := range writers {
+		w.Register(writer)
 	}
+
+	return w
 }
 
-// Register the specified writer for all future write operations.
+// compareWriter determines if the specified writers are the same, always failing if either writer is not comparable.
+func compareWriter(a, b io.Writer) bool {
+	// use reflection to determine the types
+	ta := reflect.TypeOf(a)
+	tb := reflect.TypeOf(b)
+
+	// verify the types are identical and comparable
+	if ta != tb || !ta.Comparable() || !tb.Comparable() {
+		return false
+	}
+	return a == b
+}
+
+// Register the specified writer for all future write operations. Writers should be provided as pointers to ensure they
+// can be reliably identified later on. If the writer is not comparable, it will not be registered.
 func (w *MultiWriter) Register(wr io.Writer) {
 	// ensure no write operations occur while changing the registered writers
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
 
-	// loop through the registered writers
-	for _, writer := range w.writers {
-		// check if the writer is already registered
-		if writer == wr {
-			return
-		}
+	// verify the writer is not nil
+	if wr == nil {
+		return
+	}
+	if v := reflect.ValueOf(wr); v.Kind() == reflect.Pointer && v.IsNil() {
+		return
+	}
+
+	// verify the writer is a comparable type
+	if !reflect.TypeOf(wr).Comparable() {
+		return
+	}
+
+	// verify the writer is not already registered
+	if slices.ContainsFunc(w.writers, func(writer io.Writer) bool {
+		return compareWriter(wr, writer)
+	}) {
+		return
 	}
 
 	// add the writer to the collection
@@ -49,30 +83,30 @@ func (w *MultiWriter) Unregister(wr io.Writer) {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
 
-	// loop through the registered writers
-	for i, writer := range w.writers {
-		// check if the writer is identical
-		if writer == wr {
-			// remove the writer from the collection
-			w.writers = append(w.writers[:i], w.writers[i+1:]...)
-			return
-		}
-	}
+	// remove the writer, if it is registered
+	w.writers = slices.DeleteFunc(w.writers, func(writer io.Writer) bool {
+		return compareWriter(wr, writer)
+	})
 }
 
-// Write writes len(p) from p to all registered writers.
+// Write writes len(p) from p to all registered writers. If an error occurs while writing, an error is returned
+// immediately and all remaining writers are skipped.
 func (w *MultiWriter) Write(p []byte) (n int, err error) {
-	// ensure the registered writers do not change
-	w.mutex.RLock()
-	defer w.mutex.RUnlock()
+	// ensure no changes occur to the registered writers
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
 
 	// loop through the registered writers
 	for _, writer := range w.writers {
 		// write the data to the stream
-		if n, err := writer.Write(p); err != nil {
+		n, err = writer.Write(p)
+		if err != nil {
 			return n, err
+		}
+		if n < len(p) {
+			return n, io.ErrShortWrite
 		}
 	}
 
-	return n, nil
+	return len(p), nil
 }
